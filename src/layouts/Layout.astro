@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from 'astro:transitions';
+import Analytics from '@vercel/analytics/astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import '../styles/global.css';
@@ -37,6 +38,7 @@ const { title, description = "Pablo Pinxit Visual Artist Portfolio" } = Astro.pr
 		</main>
 
 		<Footer />
+		<Analytics />
 	</body>
 </html>
 
