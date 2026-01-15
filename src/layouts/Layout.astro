@@ -1,0 +1,61 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = "Pablo Pinxit Visual Artist Portfolio" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<meta name="description" content={description} />
+		<title>{title}</title>
+
+		<!-- Google Fonts: Poiret One -->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Poiret+One&display=swap" rel="stylesheet">
+
+		<ClientRouter />
+	</head>
+	<body class="bg-white text-gray-900 font-sans antialiased overflow-x-hidden">
+		<Header />
+		
+		<main class="min-h-screen pt-32 pb-12 px-4 md:px-8 max-w-7xl mx-auto">
+			<slot />
+		</main>
+
+		<Footer />
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--font-heading: 'Poiret One', cursive;
+		--font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	}
+
+	h1, h2, h3, h4, h5, h6, .font-heading {
+		font-family: var(--font-heading);
+	}
+
+	body {
+		font-family: var(--font-body);
+	}
+	
+	/* Smooth scrolling */
+	html {
+		scroll-behavior: smooth;
+	}
+</style>

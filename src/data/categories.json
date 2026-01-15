@@ -1,0 +1,50 @@
+[
+    {
+        "title": "Walls",
+        "slug": "walls",
+        "folderName": "walls",
+        "coverImage": "/walls/walls.jpg"
+    },
+    {
+        "title": "Shutters",
+        "slug": "shutters",
+        "folderName": "Shutters",
+        "coverImage": "/Shutters/shutters.jpg"
+    },
+    {
+        "title": "Dadapop",
+        "slug": "dadapop",
+        "folderName": "Dadapop",
+        "coverImage": "/Dadapop/dadapop.jpg"
+    },
+    {
+        "title": "Ikons",
+        "slug": "ikons",
+        "folderName": "Ikons",
+        "coverImage": "/Ikons/icons.jpg"
+    },
+    {
+        "title": "Hybris",
+        "slug": "hybris",
+        "folderName": "Hybris",
+        "coverImage": "/Hybris/hybris.jpg"
+    },
+    {
+        "title": "Mind Blowing Garden",
+        "slug": "mind-blowing-garden",
+        "folderName": "Mind Blowing Garden",
+        "coverImage": "/Mind Blowing Garden/mind-blowing-garden.jpg"
+    },
+    {
+        "title": "Videos",
+        "slug": "videos",
+        "folderName": "Videos",
+        "coverImage": "/Videos/videos.jpg"
+    },
+    {
+        "title": "Arts Books",
+        "slug": "arts-books",
+        "folderName": "Arts Books",
+        "coverImage": "/Arts Books/BooksPortada.jpg"
+    }
+]

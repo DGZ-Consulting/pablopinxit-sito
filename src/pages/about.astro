@@ -1,0 +1,144 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="About me | Pablo Pinxit">
+  <div class="mx-auto max-w-7xl px-0 md:px-16 py-10 md:py-14">
+    <!-- Page Title -->
+    <h1 class="text-center text-5xl md:text-6xl font-heading font-thin tracking-widest text-[#111111] mb-12 md:mb-16">
+      About me
+    </h1>
+
+    <div class="mx-auto max-w-6xl space-y-20 md:space-y-28">
+      <!-- Born -->
+      <section class="row-leader">
+        <h2 class="label">Born</h2>
+
+        <!-- Leader (baseline-aligned) -->
+        <div class="leader" aria-hidden="true"></div>
+
+        <div class="content">
+          <p class="text">
+            Pablo Compagnucci in art pablo pinxit is an argentinian-italian artist who was born in La Plata, Argentina in 1964.
+            <br />
+            He has attended two architectural schools: Universidad de La Plata and Politecnico di Milano.
+            <br />
+            Pablo has exhibited his work in multiple galleries and museums
+          </p>
+        </div>
+      </section>
+
+      <!-- Works -->
+      <section class="row-leader">
+        <h2 class="label">Works</h2>
+
+        <!-- Leader (baseline-aligned) -->
+        <div class="leader" aria-hidden="true"></div>
+
+        <div class="content">
+          <p class="text">
+            His work flows in a labyrinth of languages, themes, and techniques being the pictorial collage his main imprint.
+            <br />
+            He is interested in the boundary zones, the limits, the conflict areas, and the point where they vanish: being the journey a constant element in this path...
+          </p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <style>
+    /* ==========
+      Desktop layout:
+      [Label] [Leader dots] [Text block]
+      La CLAVE: baseline alignment real
+    ========== */
+
+    .row-leader {
+      --text-size: clamp(1.1rem, 1.4vw, 1.5rem);
+
+      /* Leader dots */
+      --dot-h: 10px;
+      --dot-size: 1.25px;
+      --dot-gap: 10px;
+
+      display: grid;
+      grid-template-columns: max-content 1fr minmax(0, 560px);
+      column-gap: 18px;
+
+      /* 👇 CLAVE: alinea “Born”, leader y primera línea del párrafo en la misma línea */
+      align-items: baseline;
+    }
+
+    .label {
+      font-family: var(--font-heading, inherit);
+      font-weight: 200;
+      font-size: clamp(2rem, 3vw, 3rem);
+      line-height: 1.1; /* importante: baseline consistente */
+      color: #111111;
+      white-space: nowrap;
+      margin: 0;
+    }
+
+    .content {
+      justify-self: end;
+    }
+
+    .text {
+      font-family: var(--font-heading, inherit);
+      font-weight: 200;
+      font-size: var(--text-size);
+      line-height: 1.7;
+      color: rgba(17, 17, 17, 0.75);
+      margin: 0;
+    }
+
+    /* ✅ Leader baseline-aligned:
+       - La caja mide 1em => tiene baseline "natural"
+       - Los puntos se dibujan centrados dentro con ::after
+       - Sin margin-top hacks */
+    .leader {
+      position: relative;
+      height: 1em;         /* esto crea una caja con baseline */
+      width: 100%;
+      opacity: 0.45;
+    }
+
+    .leader::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+
+      /* centramos la banda de puntos dentro de la caja de 1em */
+      top: 50%;
+      transform: translateY(-50%);
+
+      height: var(--dot-h);
+
+      background-image: radial-gradient(
+        circle,
+        #111111 var(--dot-size),
+        transparent calc(var(--dot-size) + 0.1px)
+      );
+      background-size: var(--dot-gap) var(--dot-h);
+      background-repeat: repeat-x;
+      background-position: left center;
+    }
+
+    /* Mobile: stack y ocultar leader */
+    @media (max-width: 768px) {
+      .row-leader {
+        grid-template-columns: 1fr;
+        row-gap: 12px;
+        align-items: start;
+      }
+      .leader {
+        display: none;
+      }
+      .content {
+        justify-self: start;
+        max-width: 100%;
+      }
+    }
+  </style>
+</Layout>

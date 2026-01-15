@@ -1,0 +1,107 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Contact | Pablo Pinxit">
+  <div class="mx-auto max-w-7xl px-0 md:px-16 py-10 md:py-14 text-[#111111]">
+    
+    <!-- Title -->
+    <h1 class="text-center text-5xl md:text-6xl font-heading font-thin tracking-widest mb-12 md:mb-16">
+      Contact
+    </h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 max-w-6xl mx-auto">
+      
+      <!-- Left Column: Form -->
+      <form class="flex flex-col gap-10">
+        
+        <!-- Name -->
+        <div class="group">
+          <label for="name" class="block text-xl font-heading font-thin mb-2">
+            Your Name (required)
+          </label>
+          <input 
+            type="text" 
+            id="name" 
+            name="name" 
+            required
+            class="w-full border-b border-gray-400 py-2 bg-transparent focus:outline-none focus:border-black transition-colors"
+          />
+        </div>
+
+        <!-- Email -->
+        <div class="group">
+          <label for="email" class="block text-xl font-heading font-thin mb-2">
+            Your Email (required)
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            required
+            class="w-full border-b border-gray-400 py-2 bg-transparent focus:outline-none focus:border-black transition-colors"
+          />
+        </div>
+
+        <!-- Message -->
+        <div class="group">
+          <label for="message" class="block text-xl font-heading font-thin mb-2">
+            Message
+          </label>
+          <textarea 
+            id="message" 
+            name="message" 
+            rows="4"
+            class="w-full border-b border-gray-400 py-2 bg-transparent focus:outline-none focus:border-black transition-colors resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Send Button -->
+        <div class="mt-4">
+          <button 
+            type="submit" 
+            class="px-8 py-2 border border-black text-xl font-heading font-thin hover:bg-black hover:text-white transition-colors"
+          >
+            Send
+          </button>
+        </div>
+
+      </form>
+
+      <!-- Right Column: Socials -->
+      <div class="flex flex-col justify-center items-start md:pl-12 gap-8">
+        
+        <!-- Facebook -->
+        <a href="https://www.facebook.com/pablopinxit" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 hover:opacity-75 transition-opacity">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8">
+            <path d="M14 13.5h2.5l1-4H14v-2c0-1.03 0-2 2-2h1.5V1.74c-.25-.03-1.15-.26-2.2-.26-2.24 0-3.66 1.35-3.66 3.86v2.4H9.5v4h2.16V22h2.34v-8.5z"/>
+          </svg>
+          <span class="text-lg md:text-xl font-heading font-thin">pablopinxit</span>
+        </a>
+
+        <!-- Instagram -->
+        <a href="https://www.instagram.com/pablopinxit/" target="_blank" rel="noopener noreferrer" class="flex items-center gap-4 hover:opacity-75 transition-opacity">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+          <span class="text-lg md:text-xl font-heading font-thin">pablopinxit</span>
+        </a>
+
+        <!-- Email -->
+        <div class="flex items-center gap-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          <a href="mailto:contact@pablopinxit.com" class="text-lg md:text-xl font-heading font-thin hover:underline">
+            contact@pablopinxit.com
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</Layout>

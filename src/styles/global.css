@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@theme {
+  --font-heading: 'Poiret One', cursive;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-black;
+  }
+}
