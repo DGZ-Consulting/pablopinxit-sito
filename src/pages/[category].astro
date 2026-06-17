@@ -1,79 +1,23 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import GalleryGrid from '../components/GalleryGrid.jsx';
-import categories from '../data/categories.json';
-import fs from 'node:fs';
-import path from 'node:path';
+import { getCrmPortfolio } from '../lib/crm';
 
 export async function getStaticPaths() {
-  return categories.map((cat) => ({
+  const portfolio = await getCrmPortfolio();
+  return portfolio.map((cat) => ({
     params: { category: cat.slug },
-    props: { cat },
+    props: {
+      cat: { title: cat.name, slug: cat.slug },
+      images: cat.items.map(item => ({
+        src: item.image_url,
+        title: item.title ?? '',
+      })),
+    },
   }));
 }
 
-const { cat } = Astro.props;
-
-// --- AUTO-DETECT IMAGES ---
-// We scan the directory public/[folderName]/gallery/ 
-// to find all images automatically.
-    // Construct path to category folder
-    const categoryPath = path.join(process.cwd(), 'public', cat.folderName);
-    
-    // Find the actual gallery folder name (case-insensitive)
-    let galleryUrl = null;
-    let galleryPath = null;
-    
-    if (fs.existsSync(categoryPath)) {
-        const subfolders = fs.readdirSync(categoryPath);
-        const foundGallery = subfolders.find(entry => entry.toLowerCase() === 'gallery');
-        
-        if (foundGallery) {
-            galleryUrl = foundGallery;
-            galleryPath = path.join(categoryPath, foundGallery);
-        }
-    }
-
-    let images = [];
-
-try {
-    if (galleryPath) {
-        const files = fs.readdirSync(galleryPath);
-        images = files
-            .filter(file => /\.(jpg|jpeg|png|webp|avif)$/i.test(file))
-            .map(file => {
-                // Normalize filename to title
-                // e.g. "my_image_name.jpg" -> "My image name"
-                let name = file.split('.')[0];
-                name = name.replace(/[_-]/g, ' ');
-                // Optional: Capitalize (User likes uppercase in CSS, but good to have clean data)
-                // name = name.charAt(0).toUpperCase() + name.slice(1);
-                
-                // Construct path carefully. 
-                // We use cat.folderName directly (assuming correct casing in json)
-                // We use the found galleryUrl (correct casing from disk)
-                // We use the file name (correct casing from disk)
-                // We encode ONLY the parts that might have spaces, but keeping it simple first.
-                // Video paths required encoding, let's keep it safe but clean.
-                
-                return {
-                    src: `/${encodeURIComponent(cat.folderName)}/${encodeURIComponent(galleryUrl)}/${encodeURIComponent(file)}`,
-                    title: name
-                };
-            })
-            // Sort naturally
-            .sort((a, b) => {
-                const numA = parseInt(a.src.match(/\d+/)?.[0] || "0");
-                const numB = parseInt(b.src.match(/\d+/)?.[0] || "0");
-                return numA - numB;
-            });
-    } else {
-        console.error(`Directory not found: ${galleryPath}`);
-    }
-} catch (e) {
-    console.error("Error reading gallery images:", e);
-}
-
+const { cat, images } = Astro.props;
 ---
 
 <Layout title={`${cat.title} | Pablo Pinxit`}>
@@ -81,7 +25,5 @@ try {
         <h1 class="text-4xl md:text-5xl font-heading uppercase tracking-widest">{cat.title}</h1>
     </div>
 
-    <!-- React Component for the Grid + Lightbox -->
     <GalleryGrid images={images} client:load />
-
 </Layout>

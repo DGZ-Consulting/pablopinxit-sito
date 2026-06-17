@@ -1,23 +1,19 @@
 import React, { useState } from 'react';
-import categories from '../data/categories.json';
 
-export default function Navigation() {
+export default function Navigation({ categories = [] }) {
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
-        // Prevent scrolling when menu is open
         if (!isOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = 'unset';
-            // Allow scrolling again
         }
     };
 
     return (
         <>
-            {/* Hamburger Button */}
             <button
                 onClick={toggleMenu}
                 className="z-50 p-2 focus:outline-none cursor-pointer group"
@@ -30,7 +26,6 @@ export default function Navigation() {
                 </div>
             </button>
 
-            {/* Full Screen Overlay Menu */}
             <div
                 className={`fixed inset-0 bg-white z-40 flex flex-col items-center overflow-y-auto pt-32 pb-16 transition-opacity duration-500 ease-in-out ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
                     }`}
@@ -47,7 +42,7 @@ export default function Navigation() {
                             onClick={toggleMenu}
                             className="text-3xl font-heading hover:text-gray-500 transition-colors uppercase tracking-wider block"
                         >
-                            {cat.title}
+                            {cat.name}
                         </a>
                     ))}
 

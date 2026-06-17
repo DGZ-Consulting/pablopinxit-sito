@@ -3,6 +3,7 @@ import { ClientRouter } from 'astro:transitions';
 import Analytics from '@vercel/analytics/astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { getCrmPortfolio } from '../lib/crm';
 import '../styles/global.css';
 
 interface Props {
@@ -11,6 +12,8 @@ interface Props {
 }
 
 const { title, description = "Pablo Pinxit Visual Artist Portfolio" } = Astro.props;
+const portfolio = await getCrmPortfolio();
+const navCategories = portfolio.map(c => ({ name: c.name, slug: c.slug }));
 ---
 
 <!doctype html>
@@ -31,7 +34,7 @@ const { title, description = "Pablo Pinxit Visual Artist Portfolio" } = Astro.pr
 		<ClientRouter />
 	</head>
 	<body class="bg-white text-gray-900 font-sans antialiased overflow-x-hidden">
-		<Header />
+		<Header categories={navCategories} />
 		
 		<main class="min-h-screen pt-32 pb-12 px-4 md:px-8 max-w-7xl mx-auto">
 			<slot />
