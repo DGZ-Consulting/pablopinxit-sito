@@ -2,27 +2,57 @@
 import Layout from '../layouts/Layout.astro';
 import GalleryGrid from '../components/GalleryGrid.jsx';
 import { getCrmPortfolio } from '../lib/crm';
+import {
+	absoluteUrl,
+	buildImageGalleryJsonLd,
+	categoryDescription,
+	imageAlt,
+	sortPortfolioItems,
+	STATIC_CATEGORY_ROUTES,
+} from '../lib/seo';
 
-export async function getStaticPaths() {
-  const portfolio = await getCrmPortfolio();
-  return portfolio.map((cat) => ({
-    params: { category: cat.slug },
-    props: {
-      cat: { title: cat.name, slug: cat.slug },
-      images: cat.items.map(item => ({
-        src: item.image_url,
-        title: item.title ?? '',
-      })),
-    },
-  }));
+const { category } = Astro.params;
+const portfolio = await getCrmPortfolio();
+const found = portfolio.find((cat) => cat.slug === category);
+
+if (!found) {
+	return Astro.redirect('/404');
 }
 
-const { cat, images } = Astro.props;
+const cat = {
+	title: found.name,
+	slug: found.slug,
+	description: found.description,
+	cover_image: found.cover_image,
+};
+
+const images = sortPortfolioItems(found.items).map((item, index) => ({
+	src: item.image_url,
+	title: item.title?.trim() ?? '',
+	alt: imageAlt(item.title, cat.title, index),
+	description: item.description?.trim() ?? '',
+}));
+
+const items = found.items;
+const pageDescription = categoryDescription(cat.title, cat.description);
+const pageUrl = absoluteUrl(`/${cat.slug}`);
 ---
 
-<Layout title={`${cat.title} | Pablo Pinxit`}>
+<Layout
+	title={`${cat.title} | Pablo Pinxit`}
+	description={pageDescription}
+	image={cat.cover_image ?? undefined}
+	jsonLd={buildImageGalleryJsonLd(
+		{ name: cat.title, slug: cat.slug, description: cat.description },
+		items,
+		pageUrl,
+	)}
+>
     <div class="py-6 text-center mb-8">
         <h1 class="text-4xl md:text-5xl font-heading uppercase tracking-widest">{cat.title}</h1>
+        {cat.description && (
+          <p class="mt-4 max-w-2xl mx-auto text-gray-600 font-light leading-relaxed">{cat.description}</p>
+        )}
     </div>
 
     <GalleryGrid images={images} client:load />
