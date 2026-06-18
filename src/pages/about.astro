@@ -1,8 +1,25 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { buildBreadcrumbJsonLd, buildPersonJsonLd } from '../lib/seo';
+
+const description =
+  'Pablo Compagnucci, known as Pablo Pinxit, is an Argentine-Italian visual artist born in La Plata in 1964. Pictorial collage, street art and mixed media — exhibited in galleries and museums across Italy and Argentina.';
+const title = 'About Pablo Pinxit | Visual Artist Biography';
 ---
 
-<Layout title="About me | Pablo Pinxit">
+<Layout
+  title={title}
+  description={description}
+  type="profile"
+  keywords="Pablo Pinxit, Pablo Compagnucci, about, visual artist, biography, pictorial collage, Milano"
+  jsonLd={[
+    buildPersonJsonLd(),
+    buildBreadcrumbJsonLd([
+      { name: 'Home', path: '/' },
+      { name: 'About', path: '/about' },
+    ]),
+  ]}
+>
   <div class="mx-auto max-w-7xl px-0 md:px-16 py-10 md:py-14">
     <!-- Page Title -->
     <h1 class="text-center text-5xl md:text-6xl font-heading font-thin tracking-widest text-[#111111] mb-12 md:mb-16">

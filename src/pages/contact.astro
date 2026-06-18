@@ -1,8 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { buildBreadcrumbJsonLd } from '../lib/seo';
+
+const description =
+  'Contact Pablo Pinxit for commissions, exhibitions and collaborations. Email contact@pablopinxit.com or connect on Instagram and Facebook.';
+const title = 'Contact Pablo Pinxit | Commissions & Inquiries';
 ---
 
-<Layout title="Contact | Pablo Pinxit">
+<Layout
+  title={title}
+  description={description}
+  keywords="contact Pablo Pinxit, commissions, exhibitions, visual artist contact Milano"
+  jsonLd={buildBreadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Contact', path: '/contact' },
+  ])}
+>
   <div class="mx-auto max-w-7xl px-0 md:px-16 py-10 md:py-14 text-[#111111]">
     
     <!-- Title -->

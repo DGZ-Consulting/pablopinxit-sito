@@ -1,72 +1,80 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { buildBreadcrumbJsonLd } from '../lib/seo';
+
+const description =
+  'Video works by Pablo Pinxit — murals, street art and installations in Milano: Ayrton Senna Piazza Segrino, Zibaldone Grafico Via Padova, Totem N1 and more.';
+const title = 'Videos | Pablo Pinxit — Murals & Street Art';
 ---
 
-<Layout title="Videos | Pablo Pinxit">
+<Layout
+  title={title}
+  description={description}
+  keywords="Pablo Pinxit videos, street art Milano, murals, Zibaldone Grafico, Totem N1"
+  jsonLd={buildBreadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Videos', path: '/videos' },
+  ])}
+>
     <div class="max-w-5xl mx-auto py-12 flex flex-col gap-16">
-        
-        <!-- Video 1: Local MP4 -->
+
         <article class="flex flex-col gap-4">
             <h2 class="text-3xl md:text-4xl font-heading font-[700] tracking-wider text-gray-800">
                 Ayrton Senna Piazza Segrino, Milano
             </h2>
-            <video controls class="w-full h-auto bg-black" preload="metadata">
+            <video controls class="w-full h-auto bg-black" preload="metadata" aria-label="Ayrton Senna Piazza Segrino, Milano — video by Pablo Pinxit">
                 <source src="/Videos/local/video_ayrton-senna-piazza-segrino-milano_3.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
         </article>
 
-        <!-- Video 2: Local MP4 -->
         <article class="flex flex-col gap-4">
             <h2 class="text-3xl md:text-4xl font-heading font-[700] tracking-wider text-gray-800">
                 Zibaldone Grafico, Tunnel Via Padova, Milano
             </h2>
-            <video controls class="w-full h-auto bg-black" preload="metadata">
+            <video controls class="w-full h-auto bg-black" preload="metadata" aria-label="Zibaldone Grafico, Tunnel Via Padova, Milano — video by Pablo Pinxit">
                 <source src="/Videos/local/Tunnel-Via-Padova-Video.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
         </article>
 
-        <!-- Video 3: Placeholder YouTube -->
         <article class="flex flex-col gap-4">
             <h2 class="text-3xl md:text-4xl font-heading font-[700] tracking-wider text-gray-800">
                 Street - Art
             </h2>
             <div class="w-full bg-black" style="aspect-ratio: 16/9;">
-                <iframe 
-                    class="w-full h-full" 
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0" 
-                    title="Street - Art" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                <iframe
+                    class="w-full h-full"
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0"
+                    title="Street - Art — video by Pablo Pinxit"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen>
                 </iframe>
             </div>
         </article>
 
-        <!-- Video 4: YouTube -->
         <article class="flex flex-col gap-4">
             <h2 class="text-3xl md:text-4xl font-heading font-[700] tracking-wider text-gray-800">
                 Totem N1 (TT1). 2016 - Residenze Monte Amiata, Milano (with Maima)
             </h2>
             <div class="w-full bg-black" style="aspect-ratio: 16/9;">
-                <iframe 
-                    class="w-full h-full" 
-                    src="https://www.youtube-nocookie.com/embed/hyrAL9hpiNA?rel=0&modestbranding=1" 
-                    title="Totem N1 (TT1)" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                <iframe
+                    class="w-full h-full"
+                    src="https://www.youtube-nocookie.com/embed/hyrAL9hpiNA?rel=0&modestbranding=1"
+                    title="Totem N1 (TT1) — video by Pablo Pinxit"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen>
                 </iframe>
             </div>
         </article>
 
-        <!-- Video 5: Local MP4 -->
         <article class="flex flex-col gap-4">
             <h2 class="text-3xl md:text-4xl font-heading font-[700] tracking-wider text-gray-800">
                 Wall in via Meucci, Milano
             </h2>
-            <video controls class="w-full h-auto bg-black" preload="metadata">
+            <video controls class="w-full h-auto bg-black" preload="metadata" aria-label="Wall in via Meucci, Milano — video by Pablo Pinxit">
                 <source src="/Videos/local/ultimovideo.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>

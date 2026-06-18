@@ -4,38 +4,90 @@ import Analytics from '@vercel/analytics/astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { getCrmPortfolio } from '../lib/crm';
+import { SITE, absoluteUrl, truncate } from '../lib/seo';
 import '../styles/global.css';
 
 interface Props {
 	title: string;
 	description?: string;
+	image?: string;
+	imageAlt?: string;
+	type?: 'website' | 'profile';
+	jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+	noindex?: boolean;
+	keywords?: string;
 }
 
-const { title, description = "Pablo Pinxit Visual Artist Portfolio" } = Astro.props;
+const {
+	title,
+	description = SITE.defaultDescription,
+	image,
+	imageAlt: ogImageAlt,
+	type = 'website',
+	jsonLd,
+	noindex = false,
+	keywords = SITE.defaultKeywords,
+} = Astro.props;
+
 const portfolio = await getCrmPortfolio();
 const navCategories = portfolio.map(c => ({ name: c.name, slug: c.slug }));
+
+const canonicalUrl = absoluteUrl(Astro.url.pathname);
+const metaDescription = truncate(description);
+const ogImage = image ?? portfolio.find(c => c.cover_image)?.cover_image ?? absoluteUrl('/favicon.svg');
+const jsonLdBlocks = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={SITE.language}>
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.webp" />
-		<meta name="generator" content={Astro.generator} />
-		<meta name="description" content={description} />
-		<title>{title}</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="apple-touch-icon" href="/favicon.svg" />
 
-		<!-- Google Fonts: Poiret One -->
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Poiret+One&display=swap" rel="stylesheet">
+		<title>{title}</title>
+		<meta name="description" content={metaDescription} />
+		<meta name="keywords" content={keywords} />
+		<meta name="author" content={SITE.artist.name} />
+		<meta name="theme-color" content="#1a1a1a" />
+		<link rel="canonical" href={canonicalUrl} />
+
+		{noindex ? (
+			<meta name="robots" content="noindex, nofollow" />
+		) : (
+			<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+		)}
+
+		<meta property="og:type" content={type} />
+		<meta property="og:site_name" content={SITE.name} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={metaDescription} />
+		<meta property="og:url" content={canonicalUrl} />
+		<meta property="og:image" content={ogImage} />
+		<meta property="og:image:secure_url" content={ogImage} />
+		<meta property="og:image:alt" content={ogImageAlt ?? title} />
+		<meta property="og:locale" content={SITE.locale} />
+
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={metaDescription} />
+		<meta name="twitter:image" content={ogImage} />
+		<meta name="twitter:image:alt" content={ogImageAlt ?? title} />
+
+		{jsonLdBlocks.map((block) => (
+			<script type="application/ld+json" set:html={JSON.stringify(block)} />
+		))}
+
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Poiret+One&display=swap" rel="stylesheet" />
 
 		<ClientRouter />
 	</head>
 	<body class="bg-white text-gray-900 font-sans antialiased overflow-x-hidden">
 		<Header categories={navCategories} />
-		
+
 		<main class="min-h-screen pt-32 pb-12 px-4 md:px-8 max-w-7xl mx-auto">
 			<slot />
 		</main>
@@ -58,8 +110,7 @@ const navCategories = portfolio.map(c => ({ name: c.name, slug: c.slug }));
 	body {
 		font-family: var(--font-body);
 	}
-	
-	/* Smooth scrolling */
+
 	html {
 		scroll-behavior: smooth;
 	}

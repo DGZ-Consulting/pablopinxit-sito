@@ -1,8 +1,21 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { buildBreadcrumbJsonLd } from '../lib/seo';
+
+const description =
+  'Arts Books by Pablo Pinxit — artist books and collaborative publications including Hybris with Maru Rivas. Pictorial collage and mixed media editions.';
+const title = 'Arts Books | Pablo Pinxit — Artist Publications';
 ---
 
-<Layout title="Arts Books | Pablo Pinxit">
+<Layout
+  title={title}
+  description={description}
+  keywords="Pablo Pinxit arts books, Hybris, artist books, Maru Rivas, pictorial collage"
+  jsonLd={buildBreadcrumbJsonLd([
+    { name: 'Home', path: '/' },
+    { name: 'Arts Books', path: '/arts-books' },
+  ])}
+>
     <div class="max-w-4xl mx-auto py-12 space-y-20">
         
         <!-- Arts Books Video -->
@@ -10,7 +23,7 @@ import Layout from '../layouts/Layout.astro';
             <h2 class="text-3xl md:text-4xl font-heading font-[700] tracking-wider text-gray-800">
                 Hybris (with Maru Rivas)
             </h2>
-            <video controls class="w-full h-auto bg-black" preload="metadata">
+            <video controls class="w-full h-auto bg-black" preload="metadata" aria-label="Hybris (with Maru Rivas) — Arts Books video by Pablo Pinxit">
                 <source src="/Arts Books/Video/video_VideoBooks.mp4" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
