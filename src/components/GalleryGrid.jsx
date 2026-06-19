@@ -1,114 +1,122 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import {
+    buildGalleryGroups,
+    filterImagesByGroup,
+    shouldShowGalleryFilters,
+} from '../lib/galleryGroups';
 
-const PAGE_SIZE = 15;
-const PRELOAD_TIMEOUT_MS = 12000;
-
-function useInitialBatchPreload(images, batchSize) {
-    const [ready, setReady] = useState(false);
-    const [progress, setProgress] = useState({ loaded: 0, total: 0 });
-
-    useEffect(() => {
-        if (images.length === 0) {
-            setReady(true);
-            setProgress({ loaded: 0, total: 0 });
-            return;
-        }
-
-        const batch = images.slice(0, Math.min(batchSize, images.length));
-        setReady(false);
-        setProgress({ loaded: 0, total: batch.length });
-
-        let loaded = 0;
-        let cancelled = false;
-
-        const markLoaded = () => {
-            loaded += 1;
-            if (!cancelled) {
-                setProgress({ loaded, total: batch.length });
-                if (loaded >= batch.length) setReady(true);
-            }
-        };
-
-        batch.forEach((img) => {
-            const el = new Image();
-            el.onload = markLoaded;
-            el.onerror = markLoaded;
-            el.src = img.src;
-        });
-
-        const timeout = setTimeout(() => {
-            if (!cancelled) setReady(true);
-        }, PRELOAD_TIMEOUT_MS);
-
-        return () => {
-            cancelled = true;
-            clearTimeout(timeout);
-        };
-    }, [images, batchSize]);
-
-    return { ready, progress };
-}
-
-function GalleryLoading({ loaded, total }) {
-    const pct = total > 0 ? Math.round((loaded / total) * 100) : 0;
-
-    return (
-        <div className="flex flex-col items-center justify-center py-32 gap-8 animate-fade-in">
-            <div className="w-10 h-10 border-2 border-gray-200 border-t-gray-800 rounded-full animate-spin" />
-            <div className="text-center space-y-2">
-                <p className="font-heading tracking-[0.3em] uppercase text-gray-600 text-lg">
-                    Loading gallery
-                </p>
-                {total > 0 && (
-                    <p className="text-xs text-gray-400 tracking-widest">
-                        {loaded} / {total} · {pct}%
-                    </p>
-                )}
-            </div>
-        </div>
-    );
-}
+export const PAGE_SIZE = 15;
 
 function ImageWithSpinner({ src, alt, title, onClick, eager = false }) {
+    const imgRef = useRef(null);
     const [loaded, setLoaded] = useState(false);
 
+    useEffect(() => {
+        const img = imgRef.current;
+        if (img?.complete && img.naturalHeight > 0) {
+            setLoaded(true);
+        }
+    }, [src]);
+
     return (
-        <div className="relative min-h-[100px]" onClick={onClick}>
+        <div className="relative mb-6 break-inside-avoid cursor-pointer group" onClick={onClick}>
             {!loaded && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-600 rounded-full animate-spin"></div>
+                <div className="absolute inset-0 flex items-center justify-center min-h-[120px]">
+                    <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-600 rounded-full animate-spin" />
                 </div>
             )}
             <img
+                ref={imgRef}
                 src={src}
                 alt={alt}
                 title={title || undefined}
-                className={`w-full h-auto transition-opacity duration-500 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+                className={`w-full h-auto block transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
                 loading={eager ? 'eager' : 'lazy'}
                 decoding="async"
                 onLoad={() => setLoaded(true)}
             />
+
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/85 transition-colors duration-500 ease-in-out pointer-events-none" />
+
+            {title && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 p-4 pointer-events-none">
+                    <h3 className="text-gray-900 text-xl md:text-2xl font-heading tracking-widest uppercase text-center">
+                        {title}
+                    </h3>
+                </div>
+            )}
         </div>
     );
 }
 
-export default function GalleryGrid({ images }) {
+function GalleryFilters({ groups, totalCount, activeGroup, onChange }) {
+    const value = activeGroup ?? '';
+
+    return (
+        <div className="mb-8 flex flex-col items-center gap-2">
+            <label
+                htmlFor="gallery-location-filter"
+                className="text-xs text-gray-400 tracking-widest uppercase"
+            >
+                Location
+            </label>
+            <select
+                id="gallery-location-filter"
+                value={value}
+                onChange={(e) => onChange(e.target.value || null)}
+                className="w-full max-w-md font-heading tracking-wider uppercase text-sm text-gray-800 bg-white border border-gray-300 px-4 py-2.5 pr-10 appearance-none cursor-pointer hover:border-black focus:outline-none focus:border-black transition-colors"
+                style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23333' d='M1 1l5 5 5-5'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 1rem center',
+                }}
+            >
+                <option value="">All ({totalCount})</option>
+                {groups.map((group) => (
+                    <option key={group.id} value={group.id}>
+                        {group.label} ({group.count})
+                    </option>
+                ))}
+            </select>
+        </div>
+    );
+}
+
+export default function GalleryGrid({ images, categoryTitle = '' }) {
     const [lightboxIndex, setLightboxIndex] = useState(-1);
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [activeGroup, setActiveGroup] = useState(null);
     const sentinelRef = useRef(null);
 
-    const { ready: initialReady, progress } = useInitialBatchPreload(images, PAGE_SIZE);
+    const groups = useMemo(
+        () => buildGalleryGroups(images, categoryTitle),
+        [images, categoryTitle],
+    );
+    const showFilters = shouldShowGalleryFilters(groups);
 
-    const hasMore = visibleCount < images.length;
-    const visibleImages = images.slice(0, visibleCount);
+    const filteredImages = useMemo(
+        () => filterImagesByGroup(images, activeGroup, categoryTitle),
+        [images, activeGroup, categoryTitle],
+    );
+
+    const hasMore = visibleCount < filteredImages.length;
+    const visibleImages = filteredImages.slice(0, visibleCount);
+
+    const loadMore = useCallback(() => {
+        setVisibleCount((prev) => {
+            if (prev >= filteredImages.length) return prev;
+            return Math.min(prev + PAGE_SIZE, filteredImages.length);
+        });
+    }, [filteredImages.length]);
 
     useEffect(() => {
         setVisibleCount(PAGE_SIZE);
         setLightboxIndex(-1);
-    }, [images]);
+    }, [images, activeGroup]);
 
     useEffect(() => {
-        if (!initialReady || !hasMore) return;
+        if (!hasMore) return;
 
         const sentinel = sentinelRef.current;
         if (!sentinel) return;
@@ -116,25 +124,27 @@ export default function GalleryGrid({ images }) {
         const observer = new IntersectionObserver(
             (entries) => {
                 if (entries[0]?.isIntersecting) {
-                    setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, images.length));
+                    setLoadingMore(true);
+                    loadMore();
+                    setTimeout(() => setLoadingMore(false), 200);
                 }
             },
-            { rootMargin: '400px' },
+            { rootMargin: '800px' },
         );
 
         observer.observe(sentinel);
         return () => observer.disconnect();
-    }, [initialReady, hasMore, images.length, visibleCount]);
+    }, [hasMore, visibleCount, loadMore]);
 
     const nextImage = useCallback((e) => {
         e?.stopPropagation();
-        setLightboxIndex((prev) => (prev + 1) % images.length);
-    }, [images.length]);
+        setLightboxIndex((prev) => (prev + 1) % filteredImages.length);
+    }, [filteredImages.length]);
 
     const prevImage = useCallback((e) => {
         e?.stopPropagation();
-        setLightboxIndex((prev) => (prev - 1 + images.length) % images.length);
-    }, [images.length]);
+        setLightboxIndex((prev) => (prev - 1 + filteredImages.length) % filteredImages.length);
+    }, [filteredImages.length]);
 
     useEffect(() => {
         const handleKeyDown = (e) => {
@@ -152,65 +162,80 @@ export default function GalleryGrid({ images }) {
         };
     }, [lightboxIndex, nextImage, prevImage]);
 
-    const openLightbox = (index) => setLightboxIndex(index);
-    const closeLightbox = () => setLightboxIndex(-1);
-
     if (images.length === 0) {
         return <div className="text-center py-20 text-gray-400">No images found in this gallery yet.</div>;
     }
 
-    if (!initialReady) {
-        return <GalleryLoading loaded={progress.loaded} total={progress.total} />;
-    }
-
-    const current = lightboxIndex !== -1 ? images[lightboxIndex] : null;
+    const current = lightboxIndex !== -1 ? filteredImages[lightboxIndex] : null;
 
     return (
         <>
-            <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6 animate-fade-in">
-                {visibleImages.map((imgObj, idx) => (
-                    <div
-                        key={imgObj.src}
-                        className="break-inside-avoid cursor-pointer group relative overflow-hidden"
-                    >
+            {showFilters && (
+                <GalleryFilters
+                    groups={groups}
+                    totalCount={images.length}
+                    activeGroup={activeGroup}
+                    onChange={setActiveGroup}
+                />
+            )}
+
+            {filteredImages.length === 0 ? (
+                <div className="text-center py-16 text-gray-400 font-heading tracking-widest uppercase">
+                    No works in this location.
+                </div>
+            ) : (
+                <div className="columns-1 md:columns-2 lg:columns-3 gap-x-6">
+                    {visibleImages.map((imgObj, idx) => (
                         <ImageWithSpinner
+                            key={`${imgObj.src}-${idx}`}
                             src={imgObj.src}
                             alt={imgObj.alt || imgObj.title}
                             title={imgObj.title}
-                            onClick={() => openLightbox(idx)}
-                            eager={idx < PAGE_SIZE}
+                            onClick={() => setLightboxIndex(idx)}
+                            eager={idx < 6}
                         />
+                    ))}
+                </div>
+            )}
 
-                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/85 transition-colors duration-500 ease-in-out pointer-events-none"></div>
+            {filteredImages.length > 0 && (
+                <div className="py-10 flex flex-col items-center gap-4">
+                    <p className="text-xs text-gray-400 tracking-widest uppercase">
+                        {visibleCount} / {filteredImages.length} works
+                        {activeGroup && ` · ${groups.find((g) => g.id === activeGroup)?.label}`}
+                    </p>
 
-                        {imgObj.title && (
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 p-4 pointer-events-none">
-                                <h3 className="text-gray-900 text-2xl font-heading tracking-widest uppercase text-center">
-                                    {imgObj.title}
-                                </h3>
-                            </div>
-                        )}
-                    </div>
-                ))}
-            </div>
-
-            {hasMore && (
-                <div ref={sentinelRef} className="flex justify-center py-12">
-                    <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-600 rounded-full animate-spin" />
+                    {hasMore && (
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setLoadingMore(true);
+                                    loadMore();
+                                    setTimeout(() => setLoadingMore(false), 200);
+                                }}
+                                disabled={loadingMore}
+                                className="font-heading tracking-widest uppercase text-sm border border-black px-8 py-2 hover:bg-black hover:text-white transition-colors disabled:opacity-50"
+                            >
+                                {loadingMore ? 'Loading…' : 'Load more'}
+                            </button>
+                            <div ref={sentinelRef} className="h-px w-full" aria-hidden="true" />
+                        </>
+                    )}
                 </div>
             )}
 
             {current && (
                 <div
-                    className="fixed inset-0 z-[60] bg-white/95 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
-                    onClick={closeLightbox}
+                    className="fixed inset-0 z-[60] bg-white/95 backdrop-blur-md flex items-center justify-center p-4"
+                    onClick={() => setLightboxIndex(-1)}
                     role="dialog"
                     aria-modal="true"
                     aria-label={current.title || current.alt}
                 >
                     <button
                         className="absolute top-6 right-6 text-4xl font-heading hover:text-gray-500 z-50 p-2"
-                        onClick={closeLightbox}
+                        onClick={() => setLightboxIndex(-1)}
                         aria-label="Close lightbox"
                     >
                         &times;
@@ -246,7 +271,7 @@ export default function GalleryGrid({ images }) {
                             </p>
                         )}
                         <p className="font-sans text-xs text-gray-500">
-                            {lightboxIndex + 1} / {images.length}
+                            {lightboxIndex + 1} / {filteredImages.length}
                         </p>
                     </div>
                 </div>

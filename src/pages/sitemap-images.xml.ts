@@ -4,6 +4,7 @@ import {
 	absoluteUrl,
 	categoryDescription,
 	escapeXml,
+	filterGalleryItems,
 	imageAlt,
 	sortPortfolioItems,
 	STATIC_CATEGORY_ROUTES,
@@ -18,7 +19,12 @@ export const GET: APIRoute = async () => {
 		.map((cat) => {
 			const pageUrl = absoluteUrl(`/${cat.slug}`);
 			const pageCaption = categoryDescription(cat.name, cat.slug, cat.description);
-			const images = sortPortfolioItems(cat.items)
+			const galleryItems = filterGalleryItems(
+				sortPortfolioItems(cat.items),
+				cat.cover_image,
+				cat.name,
+			);
+			const images = galleryItems
 				.map((item, index) => {
 					const title = imageAlt(item.title, cat.name, index);
 					const caption = item.description?.trim() || pageCaption;

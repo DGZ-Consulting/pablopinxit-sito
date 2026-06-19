@@ -2,6 +2,11 @@ import type { PortfolioCategory, PortfolioItem } from './crm';
 
 export const STATIC_CATEGORY_ROUTES = new Set(['videos', 'arts-books']);
 
+export const STATIC_HOME_TILES = [
+  { name: 'Videos', slug: 'videos', coverImage: '/Videos/videos.jpg' },
+  { name: 'Arts Books', slug: 'arts-books', coverImage: '/Arts Books/BooksPortada.jpg' },
+] as const;
+
 export const STATIC_PAGES = [
   { path: '/', changefreq: 'weekly', priority: 1.0 },
   { path: '/about', changefreq: 'monthly', priority: 0.8 },
@@ -13,6 +18,7 @@ export const STATIC_PAGES = [
 export const SITE = {
   name: 'Pablo Pinxit',
   url: 'https://pablopinxit.com',
+  brandImage: '/favicon.webp',
   locale: 'en_US',
   language: 'en',
   defaultDescription:
@@ -132,6 +138,22 @@ export function coverAlt(categoryName: string): string {
 
 export function sortPortfolioItems(items: PortfolioItem[]): PortfolioItem[] {
   return [...items].sort((a, b) => b.sort_order - a.sort_order);
+}
+
+/** Exclude cover image when duplicated as a portfolio item in the gallery. */
+export function filterGalleryItems(
+  items: PortfolioItem[],
+  coverImage: string | null,
+  categoryName: string,
+): PortfolioItem[] {
+  const nameMatch = categoryName.trim().toLowerCase();
+
+  return items.filter((item) => {
+    if (coverImage && item.image_url === coverImage) return false;
+    const title = item.title?.trim().toLowerCase();
+    if (title && title === nameMatch) return false;
+    return true;
+  });
 }
 
 export function buildWebSiteJsonLd() {

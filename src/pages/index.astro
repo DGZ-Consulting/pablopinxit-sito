@@ -3,28 +3,29 @@ import Layout from '../layouts/Layout.astro';
 import { getCrmPortfolio } from '../lib/crm';
 import {
 	SITE,
+	absoluteUrl,
 	buildHomeItemListJsonLd,
 	buildPersonJsonLd,
 	buildWebSiteJsonLd,
 	coverAlt,
+	STATIC_HOME_TILES,
 } from '../lib/seo';
 
 const portfolio = await getCrmPortfolio();
-const heroImage = portfolio.find(c => c.cover_image)?.cover_image;
 ---
 
 <Layout
 	title="Pablo Pinxit | Visual Artist & Street Art Portfolio"
 	description={SITE.defaultDescription}
-	image={heroImage ?? undefined}
-	imageAlt="Pablo Pinxit — visual artist portfolio"
+	image={absoluteUrl(SITE.brandImage)}
+	imageAlt="Pablo Pinxit"
 	jsonLd={[
 		buildWebSiteJsonLd(),
 		buildPersonJsonLd(),
 		buildHomeItemListJsonLd(portfolio),
 	]}
 >
-	<section class="max-w-[95%] mx-auto py-4" aria-label="Portfolio galleries">
+	<section class="py-4" aria-label="Portfolio galleries">
 		<h1 class="sr-only">Pablo Pinxit — Visual Artist Portfolio</h1>
 		<div class="grid grid-cols-2 gap-4">
 			{portfolio.map((cat) => (
@@ -54,14 +55,39 @@ const heroImage = portfolio.find(c => c.cover_image)?.cover_image;
 				</a>
 			))}
 
-			<a href="/about" class="col-span-2 md:col-span-1 group relative h-40 md:h-80 overflow-hidden block bg-[#1a1a1a] hover:bg-[#800000] transition-colors duration-500 flex items-center justify-center" aria-label="About Pablo Pinxit">
-				<h2 class="text-white text-4xl font-heading font-thin tracking-widest uppercase group-hover:text-white transition-colors">
+			{STATIC_HOME_TILES.map((tile) => (
+				<a
+					href={`/${tile.slug}`}
+					class="group relative aspect-[20/19] overflow-hidden block"
+					aria-label={`View ${tile.name}`}
+				>
+					<img
+						src={tile.coverImage}
+						alt={coverAlt(tile.name)}
+						class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+						loading="lazy"
+						width="800"
+						height="760"
+					/>
+
+					<div class="absolute inset-0 bg-white/0 group-hover:bg-white/85 transition-colors duration-500 ease-in-out"></div>
+
+					<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+						<h2 class="text-gray-900 text-3xl md:text-5xl font-heading tracking-widest uppercase text-center px-4">
+							{tile.name}
+						</h2>
+					</div>
+				</a>
+			))}
+
+			<a href="/about" class="group relative aspect-[20/19] overflow-hidden block bg-[#1a1a1a] hover:bg-[#800000] transition-colors duration-500 flex items-center justify-center" aria-label="About Pablo Pinxit">
+				<h2 class="text-white text-2xl md:text-4xl font-heading font-thin tracking-widest uppercase group-hover:text-white transition-colors">
 					About
 				</h2>
 			</a>
 
-			<a href="/contact" class="col-span-2 md:col-span-1 group relative h-40 md:h-80 overflow-hidden block bg-[#1a1a1a] hover:bg-[#800000] transition-colors duration-500 flex items-center justify-center" aria-label="Contact Pablo Pinxit">
-				<h2 class="text-white text-4xl font-heading font-thin tracking-widest uppercase group-hover:text-white transition-colors">
+			<a href="/contact" class="group relative aspect-[20/19] overflow-hidden block bg-[#1a1a1a] hover:bg-[#800000] transition-colors duration-500 flex items-center justify-center" aria-label="Contact Pablo Pinxit">
+				<h2 class="text-white text-2xl md:text-4xl font-heading font-thin tracking-widest uppercase group-hover:text-white transition-colors">
 					Contact
 				</h2>
 			</a>
