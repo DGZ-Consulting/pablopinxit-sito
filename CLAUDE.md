@@ -1,79 +1,83 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for **Claude Code** (Cursor extension) and AI assistants working in this repo.
 
 ## Project Overview
 
-Portfolio website for Pablo Pinxit (Pablo Compagnucci), an Argentine-Italian visual artist. Built with Astro 6 in SSR mode, deployed via **Docker / Dokploy** (self-hosted).
+Portfolio website for Pablo Pinxit (Pablo Compagnucci). **Astro 6 SSR** + **Node standalone** in **Docker**, deployed on **Dokploy** (deploy.dgzconsulting.com). Production: https://pablopinxit.com
+
+**Continuity doc:** `docs/HANDOFF-galeria-walls-2025-06-26.md` — gallery work, CRM conventions, deploy state.
 
 ## Commands
 
 ```bash
-npm run dev       # Start dev server
-npm run build     # Production build (SSR via @astrojs/node)
-npm run start     # Run production server (after build)
-npm run preview   # Preview production build locally
+npm run dev       # Dev server → localhost:4321
+npm run build     # Production build (@astrojs/node)
+npm run start     # node ./dist/server/entry.mjs
+npm run preview   # Preview build
 ```
 
-Docker: see `docs/DOKPLOY.md`
+Run from **`pablopinxit-sito/`** (not repo parent). Docker: `docs/DOKPLOY.md`
 
-No test runner or linter is configured.
+No test runner or linter configured.
+
+## Deploy (Dokploy)
+
+- GitHub: `DGZ-Consulting/pablopinxit-sito` branch `main`
+- Dockerfile at repo root, port **4321**, `HOST=0.0.0.0`
+- Env: `CRM_URL`, `CRM_SITE_SLUG`, `HOST`, `PORT`
+- **Not Vercel** — `@vercel/analytics` removed
 
 ## Architecture
 
-### Rendering Mode
+### SSR
 
-Full SSR (`output: 'server'` in astro.config.mjs). All pages are server-rendered on Vercel, including dynamic gallery routes.
+`output: 'server'`, adapter `@astrojs/node` `{ mode: 'standalone' }` in `astro.config.mjs`.
 
-### Data Flow: CRM Integration
+### CRM data flow
 
-Portfolio data comes from an external CRM API, not from local files or a CMS:
+- `src/lib/crm.ts` → `GET {CRM_URL}/api/sites/{CRM_SITE_SLUG}/portfolio`
+- Used by Layout (nav), `[category].astro`, sitemaps
+- Shape: categories with `items[]` (`title`, `image_url`, `sort_order`, `description`)
+- Empty array if API down
 
-- `src/lib/crm.ts` fetches categories and items from `CRM_URL` + `CRM_SITE_SLUG` env vars at request time
-- Every page that shows galleries/navigation calls `getCrmPortfolio()` (including the Layout, which builds nav from it)
-- If `CRM_URL` is unset or the API is down, `getCrmPortfolio()` returns `[]` gracefully — the site renders with no gallery content
-- CRM data shape: `PortfolioCategory[]` with `name`, `slug`, `cover_image`, `description`, and `items[]` (each with `title`, `image_url`, `sort_order`)
+### Gallery system (important — Jun 2025)
+
+**Files:** `src/components/GalleryGrid.jsx`, `src/lib/galleryGroups.ts`
+
+- **LOCATION filter:** groups by title prefix before first ` · `
+- **Walk order:** CRM titles use hidden index `Mural · 1 · detail` — number stripped in UI via `formatDisplayTitle()`
+- **All view:** clusters by location, sorts within group
+- **Filtered view:** 2-col row grid when group has walk sequence
+- **Legacy fallback:** `GROUP_WALK_ORDER` map for `8 donne straordinarie Milano`
+- Filter shown when 2–50 location groups
+
+CRM cannot reorder via UI yet — client uses ` · N · ` in titles. Phase 2: Filament drag-drop in `dgz-crm-portal`.
 
 ### Routing
 
-- `/` — homepage grid of CRM categories + static tiles (Videos, Arts Books, About, Contact)
-- `/[category]` — dynamic SSR route for CRM-sourced gallery categories. Excludes slugs in `STATIC_CATEGORY_ROUTES` (`videos`, `arts-books`) which have their own pages
-- `/about`, `/contact`, `/videos`, `/arts-books` — static Astro pages
-- `/sitemap-pages.xml`, `/sitemap-images.xml` — custom API routes generating XML sitemaps from CRM data
+- `/` — CRM categories + static tiles
+- `/[category]` — dynamic galleries (excludes `videos`, `arts-books`)
+- `/about`, `/contact`, `/videos`, `/arts-books` — static
+- `/sitemap-pages.xml`, `/sitemap-images.xml`
 
-### Key Libraries
+### Other
 
-- **React** (via `@astrojs/react`): used only for two interactive client-side components — `GalleryGrid.jsx` and `Navigation.jsx`. Both use `client:load`.
-- **GSAP 3.15+**: powers the navigation menu animation (interruptible enter/exit timeline with `addPause()` and `easeReverse`). Dynamically imported inside `Navigation.jsx`. See `docs/gsap-menu-reference.md` for the animation pattern reference.
-- **Tailwind CSS v4**: configured as a Vite plugin (`@tailwindcss/vite`), imported in `src/styles/global.css`.
-
-### Layout & SEO
-
-`src/layouts/Layout.astro` is the single layout wrapper. It:
-- Fetches CRM portfolio to build navigation categories
-- Accepts SEO props (`title`, `description`, `image`, `jsonLd`, `keywords`, `noindex`)
-- Renders Open Graph, Twitter Card, canonical URL, and JSON-LD structured data
-
-`src/lib/seo.ts` centralizes all SEO logic: site constants (`SITE`), per-category SEO overrides (`CATEGORY_SEO`), JSON-LD builders, sitemap XML generation, and image alt text generation.
-
-### Gallery System
-
-`GalleryGrid.jsx` handles: masonry layout (CSS columns), progressive loading (IntersectionObserver with PAGE_SIZE=15), lightbox with keyboard navigation, and location-based filtering.
-
-`src/lib/galleryGroups.ts` extracts location groups from CRM image titles using pattern matching against known Italian location prefixes (Milano streets, murals, etc.). This grouping drives the filter dropdown on gallery pages.
-
-### Navigation
-
-Single GSAP-animated fullscreen overlay menu for all breakpoints (no separate desktop nav). The hamburger icon morphs to X via SVG `attr` animation. Categories are injected from CRM data. See `docs/gsap-menu-reference.md` for the interruptible timeline pattern.
-
-### Styling Conventions
-
-- Font: "Poiret One" for headings (`.font-heading`), system sans-serif for body
-- Color scheme: white background, `#1a1a1a` text, `#800000` accent on hover (About/Contact tiles)
-- Navigation component styles live in `src/styles/global.css` (prefixed `pp-nav-*`, `pp-menu-*`)
-- Page-specific styles use Astro scoped `<style>` blocks
+- React: `GalleryGrid.jsx`, `Navigation.jsx` (`client:load`)
+- GSAP: nav animation — `docs/gsap-menu-reference.md`
+- SEO: `src/lib/seo.ts`
+- Tailwind v4 via Vite plugin
 
 ## Environment Variables
 
-- `CRM_URL` — base URL of the external CRM API (required for gallery content)
-- `CRM_SITE_SLUG` — site identifier for the CRM API (defaults to `pablopinxit`)
+| Var | Purpose |
+|-----|---------|
+| `CRM_URL` | CRM API base (required) |
+| `CRM_SITE_SLUG` | Default `pablopinxit` |
+| `HOST` | `0.0.0.0` in Docker |
+| `PORT` | `4321` default |
+
+## Styling
+
+- Headings: Poiret One (`.font-heading`)
+- Nav styles: `src/styles/global.css` (`pp-nav-*`, `pp-menu-*`)
