@@ -1,0 +1,13 @@
+services:
+  pablopinxit-sito:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4321:4321"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4321
+      CRM_URL: ${CRM_URL}
+      CRM_SITE_SLUG: ${CRM_SITE_SLUG:-pablopinxit}

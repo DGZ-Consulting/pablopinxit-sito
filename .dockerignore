@@ -1,0 +1,14 @@
+node_modules
+dist
+.astro
+.vercel
+.git
+.gitignore
+.env
+.env.*
+*.md
+docs
+.vscode
+.idea
+.DS_Store
+npm-debug.log*

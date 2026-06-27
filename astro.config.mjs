@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import vercel from '@astrojs/vercel';
+import node from '@astrojs/node';
 
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
@@ -12,7 +12,7 @@ const buildDate = new Date().toISOString();
 export default defineConfig({
   site: 'https://pablopinxit.com',
   output: 'server',
-  adapter: vercel(),
+  adapter: node({ mode: 'standalone' }),
   integrations: [
     react(),
     sitemap({
