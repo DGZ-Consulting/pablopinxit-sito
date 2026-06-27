@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import {
     buildGalleryGroups,
     filterImagesByGroup,
+    formatDisplayTitle,
     shouldShowGalleryFilters,
+    shouldUseSequentialGrid,
 } from '../lib/galleryGroups';
 
 export const PAGE_SIZE = 15;
 
-function ImageWithSpinner({ src, alt, title, onClick, eager = false }) {
+function ImageWithSpinner({ src, alt, title, onClick, eager = false, sequential = false }) {
     const imgRef = useRef(null);
     const [loaded, setLoaded] = useState(false);
 
@@ -19,7 +21,10 @@ function ImageWithSpinner({ src, alt, title, onClick, eager = false }) {
     }, [src]);
 
     return (
-        <div className="relative mb-6 break-inside-avoid cursor-pointer group" onClick={onClick}>
+        <div
+            className={`relative mb-6 cursor-pointer group ${sequential ? '' : 'break-inside-avoid'}`}
+            onClick={onClick}
+        >
             {!loaded && (
                 <div className="absolute inset-0 flex items-center justify-center min-h-[120px]">
                     <div className="w-6 h-6 border-2 border-gray-200 border-t-gray-600 rounded-full animate-spin" />
@@ -100,6 +105,11 @@ export default function GalleryGrid({ images, categoryTitle = '' }) {
         [images, activeGroup, categoryTitle],
     );
 
+    const sequentialGrid = useMemo(
+        () => shouldUseSequentialGrid(filteredImages, activeGroup),
+        [filteredImages, activeGroup],
+    );
+
     const hasMore = visibleCount < filteredImages.length;
     const visibleImages = filteredImages.slice(0, visibleCount);
 
@@ -167,6 +177,7 @@ export default function GalleryGrid({ images, categoryTitle = '' }) {
     }
 
     const current = lightboxIndex !== -1 ? filteredImages[lightboxIndex] : null;
+    const currentDisplayTitle = current ? formatDisplayTitle(current.title) : '';
 
     return (
         <>
@@ -184,15 +195,22 @@ export default function GalleryGrid({ images, categoryTitle = '' }) {
                     No works in this location.
                 </div>
             ) : (
-                <div className="columns-1 md:columns-2 lg:columns-3 gap-x-6">
+                <div
+                    className={
+                        sequentialGrid
+                            ? 'grid grid-cols-1 md:grid-cols-2 gap-x-6'
+                            : 'columns-1 md:columns-2 lg:columns-3 gap-x-6'
+                    }
+                >
                     {visibleImages.map((imgObj, idx) => (
                         <ImageWithSpinner
                             key={`${imgObj.src}-${idx}`}
                             src={imgObj.src}
                             alt={imgObj.alt || imgObj.title}
-                            title={imgObj.title}
+                            title={formatDisplayTitle(imgObj.title)}
                             onClick={() => setLightboxIndex(idx)}
                             eager={idx < 6}
+                            sequential={sequentialGrid}
                         />
                     ))}
                 </div>
@@ -201,7 +219,7 @@ export default function GalleryGrid({ images, categoryTitle = '' }) {
             {filteredImages.length > 0 && (
                 <div className="py-10 flex flex-col items-center gap-4">
                     <p className="text-xs text-gray-400 tracking-widest uppercase">
-                        {visibleCount} / {filteredImages.length} works
+                        {Math.min(visibleCount, filteredImages.length)} / {filteredImages.length} works
                         {activeGroup && ` · ${groups.find((g) => g.id === activeGroup)?.label}`}
                     </p>
 
@@ -231,7 +249,7 @@ export default function GalleryGrid({ images, categoryTitle = '' }) {
                     onClick={() => setLightboxIndex(-1)}
                     role="dialog"
                     aria-modal="true"
-                    aria-label={current.title || current.alt}
+                    aria-label={currentDisplayTitle || current.alt}
                 >
                     <button
                         className="absolute top-6 right-6 text-4xl font-heading hover:text-gray-500 z-50 p-2"
@@ -244,7 +262,7 @@ export default function GalleryGrid({ images, categoryTitle = '' }) {
                     <img
                         src={current.src}
                         alt={current.alt || current.title}
-                        title={current.title || undefined}
+                        title={currentDisplayTitle || undefined}
                         className="max-h-[90vh] max-w-[90vw] object-contain shadow-2xl"
                         onClick={(e) => e.stopPropagation()}
                     />
@@ -265,9 +283,9 @@ export default function GalleryGrid({ images, categoryTitle = '' }) {
                     </button>
 
                     <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center">
-                        {(current.title || current.alt) && (
+                        {(currentDisplayTitle || current.alt) && (
                             <p className="font-heading tracking-widest text-lg text-gray-800 uppercase mb-1">
-                                {current.title || current.alt}
+                                {currentDisplayTitle || current.alt}
                             </p>
                         )}
                         <p className="font-sans text-xs text-gray-500">
